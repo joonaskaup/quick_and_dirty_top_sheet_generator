@@ -1,0 +1,18 @@
+# OS junk
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+env/
+venv/
+
+# PyInstaller output (in case you build again)
+dist/
+build/
+*.spec
+
+# App data
+saved_budgets/
