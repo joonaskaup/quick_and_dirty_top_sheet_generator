@@ -1,5 +1,8 @@
 import json
+import logging
 from openpyxl import load_workbook
+
+logger = logging.getLogger(__name__)
 
 class OverBudgetError(Exception):
     pass
@@ -85,7 +88,7 @@ class BudgetModel:
                     self.subtotal = round((self.grand_total - fixed_fee_total) / (1 + total_fee_pct/100))
                 else:
                     self.subtotal = 0
-        print(f"[Model] Recalc: grand_total={self.grand_total}, subtotal={self.subtotal}")
+        logger.debug("Recalc: grand_total=%s, subtotal=%s", self.grand_total, self.subtotal)
         # Recalculate categories.
         if self.import_mode == "amount" and self.keep_category_amounts:
             # Preserve the imported amounts; just update percentages.
@@ -159,7 +162,7 @@ class BudgetModel:
             self.categories[index].amount_override = None
         # Editing a category clears the "keep" flag.
         self.keep_category_amounts = False
-        print(f"[Model] update_category_percentage: index={index}, new_percentage={new_percentage}")
+        logger.debug("update_category_percentage: index=%s, new_percentage=%s", index, new_percentage)
         self.recalc()
 
     def update_category_amount(self, index, new_amount):
@@ -171,7 +174,7 @@ class BudgetModel:
             self.categories[index].percentage = 0
         # Editing a category clears the "keep" flag.
         self.keep_category_amounts = False
-        print(f"[Model] update_category_amount: index={index}, new_amount={new_amount}")
+        logger.debug("update_category_amount: index=%s, new_amount=%s", index, new_amount)
         self.recalc()
 
     def update_lock_type(self, index, lock_type):
@@ -179,7 +182,7 @@ class BudgetModel:
         if lock_type == 0:
             self.categories[index].amount_override = None
         self.keep_category_amounts = False
-        print(f"[Model] update_lock_type: index={index}, new lock_type={lock_type}")
+        logger.debug("update_lock_type: index=%s, new_lock_type=%s", index, lock_type)
         self.recalc()
 
     def lock_all(self, lock_type):
@@ -291,24 +294,6 @@ class BudgetModel:
         }
 
     def from_dict(self, data):
-        if "groups" in data:
-            groups_data = data["groups"]
-            cats = []
-            groups = []
-            for group in groups_data:
-                label = group.get("name", "Unnamed Group")
-                items = group.get("items", [])
-                start = len(cats)
-                for item in items:
-                    cats.append(item)
-                end = len(cats)
-                groups.append((label, list(range(start, end))))
-            data["categories"] = cats
-            self.groups = groups
-            if "admin_pct" not in data:
-                data["admin_pct"] = 5.0
-            if "contingency_pct" not in data:
-                data["contingency_pct"] = 10.0
         self.grand_total = data.get("grand_total", 0)
         self.admin_pct = data.get("admin_pct", 0)
         self.contingency_pct = data.get("contingency_pct", 0)
