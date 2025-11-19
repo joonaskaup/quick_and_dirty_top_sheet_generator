@@ -15,4 +15,4 @@ build/
 *.spec
 
 # App data
-saved_budgets/
+saved_budgets/app.log
