@@ -158,6 +158,11 @@ class BudgetModel:
     def update_category_percentage(self, index, new_percentage):
         new_percentage = max(new_percentage, 0)
         self.categories[index].percentage = new_percentage
+        # AUTOLOCK: Always lock by percentage when editing percentage
+        self.categories[index].lock_type = 2
+        # AUTOLOCK: If category was unlocked, lock by percentage when editing percentage
+        if self.categories[index].lock_type == 0:
+            self.categories[index].lock_type = 2
         if self.categories[index].lock_type != 2:
             self.categories[index].amount_override = None
         # Editing a category clears the "keep" flag.
@@ -167,6 +172,11 @@ class BudgetModel:
 
     def update_category_amount(self, index, new_amount):
         new_amount = max(new_amount, 0)
+        # AUTOLOCK: Always lock by amount when editing amount
+        self.categories[index].lock_type = 1
+        # AUTOLOCK: If category was unlocked, lock by amount when editing amount
+        if self.categories[index].lock_type == 0:
+            self.categories[index].lock_type = 1
         self.categories[index].amount_override = new_amount
         if self.subtotal:
             self.categories[index].percentage = new_amount / self.subtotal * 100
