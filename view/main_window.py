@@ -124,6 +124,9 @@ class MainWindow(QMainWindow):
             self.table.setItem(row, 1, item_amt)
             pct = data.get("percentage", 0)
             txt_pct = format_percentage(pct) if pct is not None else ""
+            # Show 100% on SUBTOTAL row
+            if row_type == "subtotal":
+                txt_pct = "100,00"
             if row_type in ["category", "fee"]:
                 item_pct = QTableWidgetItem(txt_pct)
                 item_pct.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable)
