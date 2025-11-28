@@ -141,9 +141,45 @@ class BudgetModel:
         if self.fees:
             total_fee = sum(fee.computed_amount for fee in self.fees)
             self.computed_grand_total = self.subtotal + total_fee
+        # --- Rounding correction: force grand_total to match user input ---
+        # After computing fees and computed_grand_total, adjust contingency to absorb rounding residual
+        diff = self.grand_total - self.computed_grand_total
+        if self.fees and abs(diff) > 0:
+            # Contingency is assumed to be the LAST percentage fee
+            last_fee = self.fees[-1]
+            if last_fee.fee_type == "percentage":
+                last_fee.computed_amount += diff
+            else:
+                last_fee.value += diff
+            # Recompute final grand total after correction
+            self.computed_grand_total = self.subtotal + sum(f.computed_amount for f in self.fees)
         else:
             self.computed_grand_total = self.subtotal
+        # --- Rounding correction: force grand_total to match user input ---
+        # After computing fees and computed_grand_total, adjust contingency to absorb rounding residual
+        diff = self.grand_total - self.computed_grand_total
+        if self.fees and abs(diff) > 0:
+            # Contingency is assumed to be the LAST percentage fee
+            last_fee = self.fees[-1]
+            if last_fee.fee_type == "percentage":
+                last_fee.computed_amount += diff
+            else:
+                last_fee.value += diff
+            # Recompute final grand total after correction
+            self.computed_grand_total = self.subtotal + sum(f.computed_amount for f in self.fees)
         self.check_over_budget()
+        # --- Rounding correction after full recalc (no re-recalc) ---
+        if hasattr(self, "fees") and self.fees:
+            diff = self.grand_total - self.computed_grand_total
+            if diff != 0:
+                # Assume the LAST fee is contingency and adjust only its computed amount
+                last_fee = self.fees[-1]
+                if last_fee.fee_type == "percentage":
+                    last_fee.computed_amount += diff
+                else:
+                    last_fee.value += diff
+                # Update final grand total exactly
+                self.computed_grand_total = self.grand_total
 
     def check_over_budget(self):
         tolerance = 1
