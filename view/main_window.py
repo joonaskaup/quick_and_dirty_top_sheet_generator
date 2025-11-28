@@ -70,13 +70,14 @@ class MainWindow(QMainWindow):
 
         # Table with 4 columns: Description, Amount, Percentage, Lock.
         self.table = QTableWidget()
-        self.table.setColumnCount(4)
-        self.table.setHorizontalHeaderLabels(["Description", "Amount", "Percentage", "Lock"])
+        self.table.setColumnCount(5)
+        self.table.setHorizontalHeaderLabels(["Description", "Amount", "Percentage", "Change", "Lock"])
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.setColumnWidth(0, 300)
         self.table.setColumnWidth(1, 150)
         self.table.setColumnWidth(2, 150)
-        self.table.setColumnWidth(3, 120)
+        self.table.setColumnWidth(3, 150)
+        self.table.setColumnWidth(4, 120)
         main_layout.addWidget(self.table)
         self.table.cellChanged.connect(self.on_cell_changed)
         self.table.cellClicked.connect(self.on_cell_clicked)
@@ -138,6 +139,16 @@ class MainWindow(QMainWindow):
                 item_pct = QTableWidgetItem(txt_pct)
                 item_pct.setFlags(Qt.ItemIsEnabled)
             self.table.setItem(row, 2, item_pct)
+            # Change column (amount delta)
+            change_val = data.get("change") if isinstance(data, dict) else None
+            if change_val is None or abs(change_val) < 0.5:
+                txt_change = ""
+            else:
+                sign = "+" if change_val > 0 else ""
+                txt_change = f"{sign}{format_amount(change_val)}"
+            item_change = QTableWidgetItem(txt_change)
+            item_change.setFlags(Qt.ItemIsEnabled)
+            self.table.setItem(row, 3, item_change)
             if row_type == "category":
                 combo = QComboBox()
                 combo.addItems(["Unlocked", "Lock Amount", "Lock Percentage"])
@@ -145,20 +156,20 @@ class MainWindow(QMainWindow):
                 combo.setCurrentIndex(lock_type)
                 combo.setProperty("cat_index", data.get("cat_index"))
                 combo.currentIndexChanged.connect(self.on_lock_combobox_changed)
-                self.table.setCellWidget(row, 3, combo)
+                self.table.setCellWidget(row, 4, combo)
             else:
                 blank = QTableWidgetItem("")
                 blank.setFlags(Qt.ItemIsEnabled)
-                self.table.setItem(row, 3, blank)
+                self.table.setItem(row, 4, blank)
             if row_type == "category":
                 if category_counter % 2 == 0:
-                    for col in range(4):
+                    for col in range(self.table.columnCount()):
                         cell = self.table.item(row, col)
                         if cell:
                             cell.setBackground(QBrush(QColor("#fafafa")))
                 category_counter += 1
             if row_type == "category" and data.get("cat_index") in over_budget_rows and over_budget:
-                for col in range(4):
+                for col in range(self.table.columnCount()):
                     cell = self.table.item(row, col)
                     if cell:
                         cell.setBackground(QBrush(QColor("red")))

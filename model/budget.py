@@ -59,6 +59,7 @@ class BudgetModel:
         if categories is None:
             categories = []
         self.categories = categories
+        self.prev_category_amounts = []
         # Default groups – used only if a manual budget is created.
         self.groups = [
             ("TOTAL SCRIPT AND DEVELOPMENT", list(range(0, 4))),
@@ -75,6 +76,8 @@ class BudgetModel:
         self.recalc()
 
     def recalc(self):
+        # Store previous amounts for change tracking
+        self.prev_category_amounts = [cat.amount for cat in self.categories]
         # Calculate subtotal.
         if not self.fees:
             self.subtotal = self.grand_total
@@ -270,13 +273,18 @@ class BudgetModel:
             for idx in indices:
                 if idx < len(self.categories):
                     cat = self.categories[idx]
+                    prev_amt = 0
+                    if idx < len(self.prev_category_amounts):
+                        prev_amt = self.prev_category_amounts[idx]
+                    change = cat.amount - prev_amt
                     row = {
                         "row_type": "category",
                         "description": cat.name,
                         "amount": cat.amount,
                         "percentage": cat.percentage,
                         "lock_type": cat.lock_type,
-                        "cat_index": idx
+                        "cat_index": idx,
+                        "change": change
                     }
                     member_rows.append(len(data))
                     data.append(row)
