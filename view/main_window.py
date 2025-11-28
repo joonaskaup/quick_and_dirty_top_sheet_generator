@@ -42,7 +42,7 @@ class MainWindow(QMainWindow):
         # Top bar for summary and buttons.
         top_bar = QHBoxLayout()
         self.locked_label = QLabel("Locked: 0 (0,00%)")
-        self.remaining_label = QLabel("Remaining: 0 (0,00%)")
+        self.remaining_label = QLabel("Unlocked: 0 (0,00%)")
         top_bar.addWidget(self.locked_label)
         top_bar.addWidget(self.remaining_label)
         self.copy_button = QPushButton("Copy to Clipboard")
@@ -84,7 +84,7 @@ class MainWindow(QMainWindow):
 
     def set_locked_remaining(self, locked_amt, locked_pct, remaining_amt, remaining_pct):
         self.locked_label.setText(f"Locked: {format_amount(locked_amt)} ({format_percentage(locked_pct)}%)")
-        self.remaining_label.setText(f"Remaining: {format_amount(remaining_amt)} ({format_percentage(remaining_pct)}%)")
+        self.remaining_label.setText(f"Unlocked: {format_amount(remaining_amt)} ({format_percentage(remaining_pct)}%)")
         if remaining_amt < 0:
             self.remaining_label.setStyleSheet("color: red")
             self.remaining_label.setToolTip(f"Over budget by {format_amount(abs(remaining_amt))}")
