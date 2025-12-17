@@ -8,6 +8,7 @@ __pycache__/
 .venv/
 env/
 venv/
+venv_x86/
 
 # PyInstaller output (in case you build again)
 dist/
